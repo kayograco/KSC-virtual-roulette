@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ruleta Virtual</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background: rgb(70,178,100);
+            background: radial-gradient(circle, #39754b 24%, #194e2c 80%, #0a361c 100%);
+        }
+
+        #container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        canvas {
+            border: 8px solid #f2d363;
+            border-radius: 50%;
+            position: relative;
+            filter: drop-shadow(0px 5px 5px rgba(0,0,0,0.3));
+        }
+
+        #inputArea {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-left: 120px;
+            border: 8px solid #f2d363;
+            background-color: #f2d363;
+            border-radius: 10px;
+            filter: drop-shadow(0px 5px 5px rgba(0,0,0,0.3));
+        }
+
+        #inputData {
+            width: 300px;
+            height: 300px;
+            margin-top: 10px;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            resize: none;
+        }
+
+        #updateDataButton {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            margin-top: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        #updateDataButton:hover {
+            background-color: #0056b3;
+        }
+
+        #indicator {
+            width: 0;
+            height: 0;
+            border-left: 25px solid transparent;
+            border-right: 25px solid transparent;
+            border-top: 50px solid #f2d363;
+            position: absolute;
+            z-index: 1;
+            filter: drop-shadow(0px 5px 5px rgba(0,0,0,0.3));
+        }
+        #logo-ksc {
+            position: absolute;
+            left: 50px;
+            bottom: 50px;
+        }
+        #logo-chubb {
+            position: absolute;
+            right: 50px;
+            bottom: 50px;
+        }
+
+        /* Estilos para el modal */
+        #modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #modalContent {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            position: relative;
+            width: 300px;
+            text-align: center;
+        }
+
+        #closeModal {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #333;
+        }
+
+        #closeModal:hover {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="indicator"></div>
+        <canvas id="wheelCanvas"></canvas>
+        <div id="inputArea">
+            <h1>Ruleta Virtual</h1>
+            <textarea id="inputData" placeholder="Escribe cada opción en una nueva línea"></textarea>
+            <label><input type="checkbox" id="discardSegmentsCheckbox"> Descartar datos seleccionados</label>
+            <button id="updateDataButton">Actualizar Datos</button>
+        </div>
+    </div>
+
+    <div id="logo-ksc"><img src="https://image.e.chubb.com/lib/fe5e15707d63067e761d/m/1/a3b91312-0da3-4bb7-9b28-661ebba13594.png" width="127" height="30" alt=""/></div>
+    <div id="logo-chubb"><img src="https://image.e.chubb.com/lib/fe5e15707d63067e761d/m/1/d107dbdb-9034-4e02-a4e8-6b13c1921b8c.png" width="124" height="30" alt=""/></div>
+
+    <!-- Modal para mostrar el dato seleccionado -->
+    <div id="modal">
+        <div id="modalContent">
+            <span id="closeModal">&times;</span>
+            <p id="selectedOptionText"></p>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById("wheelCanvas");
+        const ctx = canvas.getContext("2d");
+        const inputData = document.getElementById("inputData");
+        const updateDataButton = document.getElementById("updateDataButton");
+        const modal = document.getElementById("modal");
+        const closeModal = document.getElementById("closeModal");
+        const selectedOptionText = document.getElementById("selectedOptionText");
+        const indicator = document.getElementById("indicator");
+        const discardSegmentsCheckbox = document.getElementById("discardSegmentsCheckbox");
+
+        // Ajuste de resolución del canvas al devicePixelRatio
+        const dpr = window.devicePixelRatio || 1;
+        const size = 600;  // Tamaño físico del canvas (más grande)
+        canvas.width = size * dpr;
+        canvas.height = size * dpr;
+        canvas.style.width = `${size}px`;
+        canvas.style.height = `${size}px`;
+        ctx.scale(dpr, dpr);
+
+        let angle = 0;
+        let isSpinning = false;
+        let segments = ["Opción 1", "Opción 2", "Opción 3"]; // Valores por defecto
+
+        // Mapa para almacenar colores asociados a cada dato
+        const colorMap = {};
+
+        // Colores disponibles para asignar
+        const availableColors = [
+            '#8b7b3b', '#9a743b', '#aa6940', '#b5614c', '#af5863', '#9d4f8c', '#8c61c2', 
+            '#7171c6', '#5874a8', '#407a8c', '#327f66', '#48874f', '#608549', '#7a8140'
+        ];
+
+        // Copia de los colores que vamos a ir usando (sin repetir)
+        let remainingColors = [...availableColors];
+
+        // Función para obtener un color sin repetir, hasta que se agoten los colores
+        function getRandomColor() {
+            if (remainingColors.length === 0) {
+                // Si se acaban los colores, reiniciar el array
+                remainingColors = [...availableColors];
+            }
+            const randomIndex = Math.floor(Math.random() * remainingColors.length);
+            const color = remainingColors[randomIndex];
+            // Eliminar el color seleccionado para no repetirlo
+            remainingColors.splice(randomIndex, 1);
+            return color;
+        }
+
+        const segmentAngle = () => 2 * Math.PI / segments.length;
+        let selectedSegmentIndex = null;  // Guardar el índice del segmento seleccionado
+
+        function updateSegments() {
+            // Obtener todos los datos del campo de texto
+            const data = inputData.value.trim().split('\n');
+            
+            // Filtrar y excluir los datos que comienzan con "-"
+            segments = data.filter(item => !item.trim().startsWith('-')).map(item => item.trim());
+
+            // Asignar colores aleatorios sin repetir a cada dato si no tiene un color asignado
+            segments.forEach(segment => {
+                if (!colorMap[segment]) {
+                    colorMap[segment] = getRandomColor();
+                }
+            });
+
+            // Redibujar la ruleta con los segmentos filtrados
+            drawWheel();
+        }
+
+        function drawWheel() {
+            const totalSegments = segments.length;
+            const anglePerSegment = segmentAngle();
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.save();
+            ctx.translate(canvas.width / (2 * dpr), canvas.height / (2 * dpr)); // Ajustar con DPR
+            ctx.rotate(angle);
+
+            for (let i = 0; i < totalSegments; i++) {
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.arc(0, 0, canvas.width / (2 * dpr), i * anglePerSegment, (i + 1) * anglePerSegment);
+                ctx.fillStyle = colorMap[segments[i]];  // Usar el color del mapa de colores
+                ctx.strokeStyle = '#f2d363';
+                ctx.lineWidth = 4;  // Grosor del borde
+                ctx.fill();
+                ctx.stroke();
+
+                // Añadir texto
+                ctx.save();
+                ctx.rotate((i + 0.5) * anglePerSegment);
+                ctx.translate(canvas.width / (3 * dpr), 0);
+                ctx.rotate(0);
+                ctx.fillStyle = "#f2d363";
+                ctx.font = `${16 * dpr}px Arial`; // Ajustar tamaño de fuente con DPR
+                ctx.textAlign = "center";
+                ctx.fillText(segments[i], 0, 0);
+                ctx.restore();
+            }
+
+            // Dibujar el círculo amarillo en el centro
+            const circleRadius = 20; // Puedes ajustar este valor para el tamaño del círculo
+            ctx.beginPath();
+            ctx.arc(0, 0, circleRadius, 0, 2 * Math.PI);
+            ctx.fillStyle = '#f2d363';
+            ctx.fill();
+            
+            ctx.restore();
+
+            // Posicionar el triángulo indicador en el borde superior de la ruleta
+            const indicatorPosition = canvas.getBoundingClientRect();
+            indicator.style.top = `${indicatorPosition.top - 5}px`;  // Justo encima del borde superior
+            indicator.style.left = `${indicatorPosition.left + size / 2 - 15}px`; // Centrado horizontalmente
+        }
+
+        function spinWheel() {
+            if (isSpinning) return;
+
+            const maxSpeed = 0.1 + Math.random() * 0.5; // Velocidad máxima entre 0.5 y 1.0
+            const acceleration = 0.01 + Math.random() * 0.02; // Aceleración aleatoria entre 0.01 y 0.03
+
+            let spinTime = 0;
+            const spinDuration = Math.random() * 3000 + 2000;
+            let currentSpeed = 0;
+            let isAccelerating = true;
+            isSpinning = true;
+
+            function rotateWheel() {
+                spinTime += 30;
+
+                // Aceleración y desaceleración
+                if (isAccelerating) {
+                    currentSpeed += 0.01; // Aumentar velocidad
+                    if (currentSpeed >= maxSpeed) {
+                        isAccelerating = false;
+                    }
+                } else {
+                    currentSpeed *= 0.99; // Desaceleración suave
+                    if (currentSpeed <= 0.01) {
+                        currentSpeed = 0;
+                        isSpinning = false;
+                        selectSegment();
+                        return;
+                    }
+                }
+
+                angle += currentSpeed;
+
+                drawWheel();
+                requestAnimationFrame(rotateWheel);
+            }
+
+            function selectSegment() {
+                const totalSegments = segments.length;
+                const adjustedAngle = (angle + Math.PI / 2) % (2 * Math.PI); // Ajustar la posición para que la ruleta se detenga en el indicador superior
+                selectedSegmentIndex = Math.floor(totalSegments - (adjustedAngle / segmentAngle()) % totalSegments) % totalSegments;
+
+                // Mostrar el modal con el dato seleccionado
+                selectedOptionText.textContent = "Felicitaciones " + segments[selectedSegmentIndex];
+                modal.style.display = "flex";
+            }
+
+            rotateWheel();
+        }
+
+        function removeSelectedSegment() {
+            if (selectedSegmentIndex !== null && discardSegmentsCheckbox.checked) {  // Verificar si el checkbox está activado
+                // Obtener todas las líneas del campo de texto original
+                let lines = inputData.value.split('\n');
+
+                // Buscar el dato original que coincide con el seleccionado
+                const selectedText = segments[selectedSegmentIndex];
+
+                // Encontrar el índice exacto en el campo de texto que coincide con el dato seleccionado
+                const textIndex = lines.findIndex(line => line.trim() === selectedText);
+
+                if (textIndex !== -1) {
+                    // Marcar el dato en el área de texto con "-"
+                    lines[textIndex] = "-" + lines[textIndex];
+
+                    // Actualizar el campo de texto
+                    inputData.value = lines.join('\n');
+                }
+
+                // Eliminar el segmento seleccionado de la ruleta
+                segments.splice(selectedSegmentIndex, 1);
+                selectedSegmentIndex = null;
+
+                // Redibujar la ruleta sin el segmento seleccionado
+                drawWheel();
+            }
+        }
+
+        // Cerrar el modal al hacer clic en la 'X'
+        closeModal.addEventListener("click", () => {
+            modal.style.display = "none";
+            removeSelectedSegment();  // Eliminar el segmento seleccionado y tacharlo
+        });
+
+        // Cerrar el modal al hacer clic fuera de la ventana modal
+        window.addEventListener("click", (event) => {
+            if (event.target === modal) {
+                modal.style.display = "none";
+                removeSelectedSegment();  // Eliminar el segmento seleccionado y tacharlo
+            }
+        });
+
+        updateDataButton.addEventListener("click", updateSegments);
+        canvas.addEventListener("click", spinWheel);
+
+        // Dibujo inicial de la ruleta
+        drawWheel();
+    </script>
+</body>
+</html>
