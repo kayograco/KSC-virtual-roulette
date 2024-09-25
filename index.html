@@ -98,7 +98,6 @@
             width: 100%;
             height: 100%;
             background-color: rgba(0, 0, 0, 0.5);
-            display: flex;
             justify-content: center;
             align-items: center;
         }
@@ -268,7 +267,7 @@
         function spinWheel() {
             if (isSpinning) return;
 
-            const maxSpeed = 0.1 + Math.random() * 0.5; // Velocidad máxima entre 0.5 y 1.0
+            const maxSpeed = 0.1 + Math.random() * 0.2; // Velocidad máxima entre 0.5 y 1.0
             const acceleration = 0.01 + Math.random() * 0.02; // Aceleración aleatoria entre 0.01 y 0.03
 
             let spinTime = 0;
@@ -287,8 +286,8 @@
                         isAccelerating = false;
                     }
                 } else {
-                    currentSpeed *= 0.99; // Desaceleración suave
-                    if (currentSpeed <= 0.01) {
+                    currentSpeed *= 0.992; // Desaceleración suave
+                    if (currentSpeed <= 0.001) {
                         currentSpeed = 0;
                         isSpinning = false;
                         selectSegment();
