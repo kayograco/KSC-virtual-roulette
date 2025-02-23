@@ -4,9 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ruleta Virtual</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Antonio:wght@100..700&family=Roboto+Slab:wght@100..900&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: "Roboto Slab", serif;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -16,57 +19,84 @@
             background: rgb(70,178,100);
             background: radial-gradient(circle, #39754b 24%, #194e2c 80%, #0a361c 100%);
         }
-
+        h1 {
+            text-align: center;
+            border-bottom: 1px solid #f2d363;
+            color: #f2d363;
+            margin: 0;
+            padding: 10px;
+            font-family: 'Antonio', sans-serif;
+            letter-spacing: 0.1em;
+            font-weight: 300;
+        }
+        h1::before {
+            content: "✦ ";
+        }
+        h1::after {
+            content: " ✦";
+        }
+        h1::before,
+        h1::after {
+            font-size: 13px;
+            vertical-align: middle;
+        }
         #container {
             display: flex;
             align-items: center;
             justify-content: center;
         }
-
         canvas {
             border: 8px solid #f2d363;
             border-radius: 50%;
             position: relative;
             filter: drop-shadow(0px 5px 5px rgba(0,0,0,0.3));
         }
-
         #inputArea {
             display: flex;
             flex-direction: column;
-            align-items: center;
             margin-left: 120px;
-            border: 8px solid #f2d363;
-            background-color: #f2d363;
+            border: 4px solid #f2d363;
             border-radius: 10px;
-            filter: drop-shadow(0px 5px 5px rgba(0,0,0,0.3));
+            width: 350px;
         }
-
         #inputData {
-            width: 300px;
             height: 300px;
-            margin-top: 10px;
             padding: 10px;
             font-size: 16px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
             resize: none;
+            background: none;
+            color: #fff;
+            margin: 5px;
+            border: 1px solid #fff;
+            line-height: 1.2em;
+            font-family: "Roboto Slab", serif;
+            font-optical-sizing: auto;
+            font-weight: 400;
+            font-style: normal;
+            font-size: 1.1em;
+            border-radius: 5px;
         }
-
+        ::placeholder {
+            color: #fff;
+            opacity: 1; /* Firefox */
+        }
+        ::-ms-input-placeholder { /* Edge 12 -18 */
+            color: #f2d363;
+        }
         #updateDataButton {
             background-color: #007bff;
             color: white;
             padding: 10px 20px;
-            margin-top: 10px;
+            margin: 10px;
+            padding-top: 10px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
             font-size: 16px;
         }
-
         #updateDataButton:hover {
             background-color: #0056b3;
         }
-
         #indicator {
             width: 0;
             height: 0;
@@ -101,16 +131,40 @@
             justify-content: center;
             align-items: center;
         }
-
         #modalContent {
-            background-color: #fff;
+            background-color: #39754b;
             padding: 20px;
             border-radius: 10px;
             position: relative;
             width: 300px;
             text-align: center;
+            color: #f2d363;
+            border: 2px solid #f2d363;
         }
-
+        #modalContent p span {
+            font-family: 'Antonio', sans-serif;
+            font-size: 3em;
+        }
+        #modalContent p hr {
+            width: 200px;
+            background-color: #f2d363;
+            border: none;
+            height: 2px;
+            line-height: 0em;
+        }
+        #modalContent p hr::before {
+            content: "✦";
+            right: 50px;
+        }
+        #modalContent p hr::after {
+            content: "✦";
+            left: 50px;
+        }
+        #modalContent p hr::before,
+        #modalContent p hr::after {
+            font-size: 13px;
+            position: absolute;
+        }
         #closeModal {
             position: absolute;
             top: 10px;
@@ -118,11 +172,65 @@
             font-size: 20px;
             font-weight: bold;
             cursor: pointer;
-            color: #333;
+            color: #f2d363;
         }
-
         #closeModal:hover {
             color: red;
+        }
+        label.check {
+            color: #f2d363;
+            font-weight: 500;
+            border-top: 1px solid #f2d363;
+            padding-top: 5px;
+            margin-bottom: 0;
+            font-size: 1.1em;
+        }
+        .check input {
+            display: none;
+        }
+        .check {
+            display: block;
+            position: relative;
+            padding-left: 35px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        .checkmark {
+            position: absolute;
+            left: 5px;
+            height: 20px;
+            width: 20px;
+            border: 1px solid #fff;
+            border-radius: 5px;
+        }
+        .checkmark:after {
+            content: "";
+            position: absolute;
+            display: none;
+        }
+        .check input:checked ~ .checkmark:after {
+            display: block;
+        }
+        .check .checkmark:after {
+            left: 10px;
+            top: -7px;
+            width: 6px;
+            height: 18px;
+            border-style: solid;
+            border-width: 0 3px 3px 0;
+            -webkit-transform: rotate(45deg);
+            -ms-transform: rotate(45deg);
+            transform: rotate(45deg);
+        }
+        .descripcion {
+            color: #f2d363;
+            padding: 0 10px 10px 35px;
+            font-weight: 100;
+            border-bottom: 1px solid #f2d363;
         }
     </style>
 </head>
@@ -131,9 +239,13 @@
         <div id="indicator"></div>
         <canvas id="wheelCanvas"></canvas>
         <div id="inputArea">
-            <h1>Ruleta Virtual</h1>
-            <textarea id="inputData" placeholder="Escribe cada opción en una nueva línea"></textarea>
-            <label><input type="checkbox" id="discardSegmentsCheckbox"> Descartar datos seleccionados</label>
+            <h1>RULETA VIRTUAL</h1>
+            <textarea id="inputData" placeholder="Haz click en esta caja de texto, incluye cada opción en una nueva línea, actualiza los datos y haz click en la ruleta para hacerla girar."></textarea>
+            <label class="check">
+                <input type="checkbox" id="discardSegmentsCheckbox"> Descartar datos seleccionados
+                <span class="checkmark"></span>
+            </label>
+            <div class="descripcion">Selecciona esta opción para que los datos seleccionados se excluyan en cada ronda.</div>
             <button id="updateDataButton">Actualizar Datos</button>
         </div>
     </div>
@@ -150,6 +262,29 @@
     </div>
 
     <script>
+        // Creamos un AudioContext global (nota: se debe inicializar con interacción del usuario)
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    
+        // Función para generar el sonido de clic
+        function playClickSound({ frequency = 100, duration = 0.05, volume = 0.5, type = 'square' } = {}) {
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+    
+            oscillator.type = type;
+            oscillator.frequency.setValueAtTime(frequency, audioCtx.currentTime);
+    
+            // Inicia el volumen y luego se degrada rápidamente para simular un clic
+            gainNode.gain.setValueAtTime(volume, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+    
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+    
+            oscillator.start();
+            oscillator.stop(audioCtx.currentTime + duration);
+        }
+    
+        // Resto del código (sin cambios sustanciales)...
         const canvas = document.getElementById("wheelCanvas");
         const ctx = canvas.getContext("2d");
         const inputData = document.getElementById("inputData");
@@ -159,134 +294,116 @@
         const selectedOptionText = document.getElementById("selectedOptionText");
         const indicator = document.getElementById("indicator");
         const discardSegmentsCheckbox = document.getElementById("discardSegmentsCheckbox");
-
-        // Ajuste de resolución del canvas al devicePixelRatio
+    
         const dpr = window.devicePixelRatio || 1;
-        const size = 600;  // Tamaño físico del canvas (más grande)
+        const size = 600;
         canvas.width = size * dpr;
         canvas.height = size * dpr;
         canvas.style.width = `${size}px`;
         canvas.style.height = `${size}px`;
         ctx.scale(dpr, dpr);
-
+    
         let angle = 0;
         let isSpinning = false;
-        let segments = ["Opción 1", "Opción 2", "Opción 3"]; // Valores por defecto
-
-        // Mapa para almacenar colores asociados a cada dato
+        let segments = [];
+    
         const colorMap = {};
-
-        // Colores disponibles para asignar
         const availableColors = [
             '#8b7b3b', '#9a743b', '#aa6940', '#b5614c', '#af5863', '#9d4f8c', '#8c61c2', 
             '#7171c6', '#5874a8', '#407a8c', '#327f66', '#48874f', '#608549', '#7a8140'
         ];
-
-        // Copia de los colores que vamos a ir usando (sin repetir)
         let remainingColors = [...availableColors];
-
-        // Función para obtener un color sin repetir, hasta que se agoten los colores
+    
         function getRandomColor() {
             if (remainingColors.length === 0) {
-                // Si se acaban los colores, reiniciar el array
                 remainingColors = [...availableColors];
             }
             const randomIndex = Math.floor(Math.random() * remainingColors.length);
             const color = remainingColors[randomIndex];
-            // Eliminar el color seleccionado para no repetirlo
             remainingColors.splice(randomIndex, 1);
             return color;
         }
-
+    
         const segmentAngle = () => 2 * Math.PI / segments.length;
-        let selectedSegmentIndex = null;  // Guardar el índice del segmento seleccionado
-
+        let selectedSegmentIndex = null;
+        
+        // Variable para controlar el índice del último "clic" sonoro
+        let lastSoundIndex = 0;
+    
         function updateSegments() {
-            // Obtener todos los datos del campo de texto
             const data = inputData.value.trim().split('\n');
-            
-            // Filtrar y excluir los datos que comienzan con "-"
             segments = data.filter(item => !item.trim().startsWith('-')).map(item => item.trim());
-
-            // Asignar colores aleatorios sin repetir a cada dato si no tiene un color asignado
             segments.forEach(segment => {
                 if (!colorMap[segment]) {
                     colorMap[segment] = getRandomColor();
                 }
             });
-
-            // Redibujar la ruleta con los segmentos filtrados
             drawWheel();
         }
-
+    
         function drawWheel() {
             const totalSegments = segments.length;
             const anglePerSegment = segmentAngle();
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.save();
-            ctx.translate(canvas.width / (2 * dpr), canvas.height / (2 * dpr)); // Ajustar con DPR
+            ctx.translate(canvas.width / (2 * dpr), canvas.height / (2 * dpr));
             ctx.rotate(angle);
-
+    
             for (let i = 0; i < totalSegments; i++) {
                 ctx.beginPath();
                 ctx.moveTo(0, 0);
                 ctx.arc(0, 0, canvas.width / (2 * dpr), i * anglePerSegment, (i + 1) * anglePerSegment);
-                ctx.fillStyle = colorMap[segments[i]];  // Usar el color del mapa de colores
+                ctx.fillStyle = colorMap[segments[i]];
                 ctx.strokeStyle = '#f2d363';
-                ctx.lineWidth = 4;  // Grosor del borde
+                ctx.lineWidth = 4;
                 ctx.fill();
                 ctx.stroke();
-
-                // Añadir texto
+    
                 ctx.save();
                 ctx.rotate((i + 0.5) * anglePerSegment);
-                ctx.translate(canvas.width / (3 * dpr), 0);
-                ctx.rotate(0);
+                ctx.translate(canvas.width / (2.2 * dpr), 12);
                 ctx.fillStyle = "#f2d363";
-                ctx.font = `${16 * dpr}px Arial`; // Ajustar tamaño de fuente con DPR
-                ctx.textAlign = "center";
+                ctx.font = `${14 * dpr}px Antonio`;
+                ctx.textAlign = "right";
                 ctx.fillText(segments[i], 0, 0);
                 ctx.restore();
             }
-
-            // Dibujar el círculo amarillo en el centro
-            const circleRadius = 20; // Puedes ajustar este valor para el tamaño del círculo
+    
+            const circleRadius = 20;
             ctx.beginPath();
             ctx.arc(0, 0, circleRadius, 0, 2 * Math.PI);
             ctx.fillStyle = '#f2d363';
             ctx.fill();
-            
             ctx.restore();
-
-            // Posicionar el triángulo indicador en el borde superior de la ruleta
+    
             const indicatorPosition = canvas.getBoundingClientRect();
-            indicator.style.top = `${indicatorPosition.top - 5}px`;  // Justo encima del borde superior
-            indicator.style.left = `${indicatorPosition.left + size / 2 - 15}px`; // Centrado horizontalmente
+            indicator.style.top = `${indicatorPosition.top - 5}px`;
+            indicator.style.left = `${indicatorPosition.left + size / 2 - 15}px`;
         }
-
+    
         function spinWheel() {
             if (isSpinning) return;
-
-            const maxSpeed = 0.1 + Math.random() * 0.2; // Velocidad máxima entre 0.5 y 1.0
-            const acceleration = 0.01 + Math.random() * 0.02; // Aceleración aleatoria entre 0.01 y 0.03
-
+    
+            const maxSpeed = 0.1 + Math.random() * 0.2;
             let spinTime = 0;
             const spinDuration = Math.random() * 3000 + 2000;
             let currentSpeed = 0;
             let isAccelerating = true;
             isSpinning = true;
-
+    
+            // Reiniciamos el contador del sonido basado en el ángulo actual
+            lastSoundIndex = Math.floor((angle + Math.PI / 2) / segmentAngle());
+    
             function rotateWheel() {
                 spinTime += 30;
-
-                // Aceleración y desaceleración
+    
                 if (isAccelerating) {
-                    currentSpeed += 0.01; // Aumentar velocidad
+                    currentSpeed += 0.01;
                     if (currentSpeed >= maxSpeed) {
                         isAccelerating = false;
                     }
                 } else {
-                    currentSpeed *= 0.992; // Desaceleración suave
+                    currentSpeed *= 0.992;
                     if (currentSpeed <= 0.001) {
                         currentSpeed = 0;
                         isSpinning = false;
@@ -294,73 +411,71 @@
                         return;
                     }
                 }
-
+    
                 angle += currentSpeed;
-
+    
+                // Calcula el índice actual basado en el ángulo (ajustado para alinear con el indicador)
+                const currentSoundIndex = Math.floor((angle + Math.PI / 2) / segmentAngle());
+                if (currentSoundIndex > lastSoundIndex) {
+                    // Se ejecuta el sonido de clic cada vez que se cruza el límite de un segmento
+                    playClickSound({ frequency: 800, duration: 0.05, volume: 0.5, type: 'square' });
+                    lastSoundIndex = currentSoundIndex;
+                }
+    
                 drawWheel();
                 requestAnimationFrame(rotateWheel);
             }
-
+    
             function selectSegment() {
-                const totalSegments = segments.length;
-                const adjustedAngle = (angle + Math.PI / 2) % (2 * Math.PI); // Ajustar la posición para que la ruleta se detenga en el indicador superior
-                selectedSegmentIndex = Math.floor(totalSegments - (adjustedAngle / segmentAngle()) % totalSegments) % totalSegments;
+    const totalSegments = segments.length;
+    const adjustedAngle = (angle + Math.PI / 2) % (2 * Math.PI);
+    selectedSegmentIndex = Math.floor(totalSegments - (adjustedAngle / segmentAngle()) % totalSegments) % totalSegments;
 
-                // Mostrar el modal con el dato seleccionado
-                selectedOptionText.textContent = "Felicitaciones " + segments[selectedSegmentIndex];
-                modal.style.display = "flex";
+    // Obtener el color del segmento seleccionado
+    const selectedColor = colorMap[segments[selectedSegmentIndex]];
+
+    // Cambiar el fondo del modal con el color del segmento seleccionado
+    const modalContent = document.getElementById("modalContent");
+    modalContent.style.backgroundColor = selectedColor;
+
+    selectedOptionText.innerHTML = "La suerte ha elegido<br><hr><span>" + segments[selectedSegmentIndex] + "</span>";
+    modal.style.display = "flex";
             }
-
+    
             rotateWheel();
         }
-
+    
         function removeSelectedSegment() {
-            if (selectedSegmentIndex !== null && discardSegmentsCheckbox.checked) {  // Verificar si el checkbox está activado
-                // Obtener todas las líneas del campo de texto original
+            if (selectedSegmentIndex !== null && discardSegmentsCheckbox.checked) {
                 let lines = inputData.value.split('\n');
-
-                // Buscar el dato original que coincide con el seleccionado
                 const selectedText = segments[selectedSegmentIndex];
-
-                // Encontrar el índice exacto en el campo de texto que coincide con el dato seleccionado
                 const textIndex = lines.findIndex(line => line.trim() === selectedText);
-
                 if (textIndex !== -1) {
-                    // Marcar el dato en el área de texto con "-"
                     lines[textIndex] = "-" + lines[textIndex];
-
-                    // Actualizar el campo de texto
                     inputData.value = lines.join('\n');
                 }
-
-                // Eliminar el segmento seleccionado de la ruleta
                 segments.splice(selectedSegmentIndex, 1);
                 selectedSegmentIndex = null;
-
-                // Redibujar la ruleta sin el segmento seleccionado
                 drawWheel();
             }
         }
-
-        // Cerrar el modal al hacer clic en la 'X'
+    
         closeModal.addEventListener("click", () => {
             modal.style.display = "none";
-            removeSelectedSegment();  // Eliminar el segmento seleccionado y tacharlo
+            removeSelectedSegment();
         });
-
-        // Cerrar el modal al hacer clic fuera de la ventana modal
         window.addEventListener("click", (event) => {
             if (event.target === modal) {
                 modal.style.display = "none";
-                removeSelectedSegment();  // Eliminar el segmento seleccionado y tacharlo
+                removeSelectedSegment();
             }
         });
-
+    
         updateDataButton.addEventListener("click", updateSegments);
         canvas.addEventListener("click", spinWheel);
-
-        // Dibujo inicial de la ruleta
+    
         drawWheel();
     </script>
+    
 </body>
 </html>
